@@ -1,0 +1,23 @@
+version: '3'
+services:
+  gps_util:
+    image: openjdk:17-jdk-alpine
+    ports:
+      -
+    volumes:
+      - '../libs/gpsUtil.jar:app.jar'
+    command: [ 'java', '-jar', '/app.jar' ]
+  reward_central:
+    image: openjdk:17-jdk-alpine
+    ports:
+      -
+    volumes:
+      - '../libs/RewardCentral.jar:app.jar'
+    command: [ 'java', '-jar', '/app.jar' ]
+  trip_pricer:
+    image: openjdk:17-jdk-alpine
+    ports:
+      -
+    volumes:
+      - '../libs/TripPricer.jar:app.jar'
+    command: [ 'java', '-jar', '/app.jar' ]
