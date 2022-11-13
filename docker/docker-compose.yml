@@ -1,23 +1,46 @@
-version: '3'
+version: '3.4'
+
 services:
-  gps_util:
-    image: openjdk:17-jdk-alpine
-    ports:
-      -
+  eureka:
+    image: openjdk:17-jdk-slim
     volumes:
-      - '../libs/gpsUtil.jar:app.jar'
-    command: [ 'java', '-jar', '/app.jar' ]
-  reward_central:
-    image: openjdk:17-jdk-alpine
+      - '../discovery/build/libs/discovery.jar:/home/app.jar'
+    command: [ 'java', '-jar', '/home/app.jar' ]
     ports:
-      -
+      - '8761:8761'
+  gps-api:
+    image: openjdk:17-jdk-slim
+    links:
+      - eureka
     volumes:
-      - '../libs/RewardCentral.jar:app.jar'
-    command: [ 'java', '-jar', '/app.jar' ]
-  trip_pricer:
-    image: openjdk:17-jdk-alpine
+      - '../gps-api/build/libs/gps-api.jar:/home/app.jar'
+    command: [ 'java', '-jar', '/home/app.jar' ]
     ports:
-      -
+      - '9010-9030:8080'
+    environment:
+      - SERVER_URI=http://eureka:8761/eureka
+  rewards-api:
+    image: openjdk:17-jdk-slim
     volumes:
-      - '../libs/TripPricer.jar:app.jar'
-    command: [ 'java', '-jar', '/app.jar' ]
+      - '../rewards-api/build/libs/rewards-api.jar:/home/app.jar'
+    command: [ 'java', '-jar', '/home/app.jar' ]
+    ports:
+      - '8030-8050:8080'
+    environment:
+      - SERVER_URI=http://eureka:8761/eureka
+  trip-pricer-api:
+    image: openjdk:17-jdk-slim
+    volumes:
+      - '../trip-pricer-api/build/libs/trip-pricer-api.jar:/home/app.jar'
+    command: [ 'java', '-jar', '/home/app.jar' ]
+    ports:
+      - '8050-8070:8080'
+    environment:
+      - SERVER_URI=http://eureka:8761/eureka
+  gateway:
+    image: openjdk:17-jdk-slim
+    volumes:
+      - '../gateway/build/libs/gateway.jar:/home/app.jar'
+    command: [ 'java', '-jar', '/home/app.jar' ]
+    ports:
+      - '8762:8762'

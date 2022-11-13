@@ -7,7 +7,6 @@ import fr.axzial.service.RewardsService;
 import fr.axzial.service.gps.GpsApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +76,6 @@ public class TestPerformance {
     }
 
     // Approx 116 seconds
-    @Ignore
     @Test
     public void highVolumeGetRewards() {
         int TEST_AMOUNT = 100_000;
@@ -88,8 +86,8 @@ public class TestPerformance {
         assertFalse(attractions.isEmpty());
         Attraction attraction = attractions.get(0);
         List<User> list = IntStream.generate(() -> 1)
-                .parallel()
                 .limit(TEST_AMOUNT)
+                .parallel()
                 .mapToObj(i -> User.builder().id(UUID.randomUUID()).build())
                 .peek(u -> u.addVisitedLocations(VisitedLocation.builder().id(u.getId()).location(attraction).timeVisited(new Date()).build()))
                 .peek(u -> rewardsService.calculateRewards(u))

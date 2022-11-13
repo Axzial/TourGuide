@@ -20,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,19 +71,14 @@ public class TestRewardsService {
 
     @Test
     public void nearAllAttractions() {
-        rewardsService.setProximityBuffer(Integer.MAX_VALUE);
 
-        InternalTestHelper.setInternalUserNumber(1);
-
-        List<UserReward> rewards = tourGuideService.getAllUsers()
-                .stream()
+        List<UserReward> rewards = IntStream.generate(() -> 1)
                 .limit(1)
+                .mapToObj(i -> User.builder().id(UUID.randomUUID()).userName("jon").phoneNumber("000").emailAddress("jon@tourGuide.com").build())
                 .peek(user -> rewardsService.calculateRewards(user))
                 .map(user -> tourGuideService.getUserRewards(user))
                 .findFirst()
                 .get();
-
-        tourGuideService.tracker.stopTracking();
 
         assertEquals(gpsApiService.getAttractions().size(), rewards.size());
     }
