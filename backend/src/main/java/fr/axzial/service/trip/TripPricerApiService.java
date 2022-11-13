@@ -17,9 +17,18 @@ public class TripPricerApiService extends ApiService {
     }
 
     public List<Provider> getPrice(String apiKey, UUID userId, int numberOfAdults, int numberOfChildren, int tripDuration, int cumulatativeRewardPoints) {
-        return getWebClient().get().uri("/trip-pricer/price")
+        return getWebClient().get()
+                .uri(uriBuilder -> uriBuilder.path("/trip-pricer/price")
+                        .queryParam("apiKey", apiKey)
+                        .queryParam("userId", userId)
+                        .queryParam("numberOfAdults", numberOfAdults)
+                        .queryParam("numberOfChildren", numberOfChildren)
+                        .queryParam("tripDuration", tripDuration)
+                        .queryParam("cumulatativeRewardPoints", cumulatativeRewardPoints)
+                        .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<Provider>>() {})
+                .bodyToMono(new ParameterizedTypeReference<List<Provider>>() {
+                })
                 .block();
     }
 }
