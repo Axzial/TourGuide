@@ -1,8 +1,10 @@
-package tourGuide.user;
+package fr.axzial.model.user;
 
-import gpsUtil.location.Attraction;
-import gpsUtil.location.VisitedLocation;
+import fr.axzial.model.gps.Attraction;
+import fr.axzial.model.gps.VisitedLocation;
+import lombok.Data;
 
+@Data
 public class UserReward {
 
     public final VisitedLocation visitedLocation;
@@ -18,14 +20,6 @@ public class UserReward {
     public UserReward(VisitedLocation visitedLocation, Attraction attraction) {
         this.visitedLocation = visitedLocation;
         this.attraction = attraction;
-    }
-
-    public void setRewardPoints(int rewardPoints) {
-        this.rewardPoints = rewardPoints;
-    }
-
-    public int getRewardPoints() {
-        return rewardPoints;
     }
 
 }
