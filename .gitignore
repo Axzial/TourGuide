@@ -99,7 +99,7 @@ fabric.properties
 ### Gradle template
 .gradle
 **/build/
-!src/**/build/
+!archive/**/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
