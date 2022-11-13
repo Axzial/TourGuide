@@ -10,7 +10,6 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'jacoco'
 
 repositories {
     mavenCentral()
@@ -66,50 +65,97 @@ subprojects {
 
 }
 
+def jacocoToolVersion = '0.8.3'
+
 dependencies {
     implementation name: 'GpsUtil', ext: 'jar'
+    implementation "org.jacoco:org.jacoco.agent:${jacocoToolVersion}:runtime"
 }
 
 bootJar {
     enabled false
 }
 
+apply plugin: 'jacoco'
+
+// -----------------------------------------------------------
+//
+// JaCoCo
+
+
+
 jacoco {
-    toolVersion = "0.8.4"
+    toolVersion = "${jacocoToolVersion}"
 }
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-        csv.enabled false
-        html.destination file("${buildDir}/jacocoHtml")
-    }
-}
-
-task generateMergedReport(type: JacocoReport) {
-    dependsOn = subprojects.test
-    additionalSourceDirs.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories.setFrom files(subprojects.sourceSets.main.output)
-    executionData.setFrom project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+    dependsOn test
+    sourceSets sourceSets.main
+    executionData fileTree(project.rootDir).include("**/build/jacoco/*.exec")
     reports {
         xml.enabled false
-        csv.enabled false
-        html.enabled true
+        csv.enabled true
+        html.destination file("${buildDir}/reports/jacoco/Html")
+        csv.destination file("${buildDir}/reports/jacoco/jacoco.csv")
     }
 }
-
-test.finalizedBy jacocoTestReport
-check.dependsOn jacocoTestCoverageVerification
 
 jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
                 minimum = 0.5
             }
         }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+    testLogging.showStandardStreams = true
+    reports {
+        junitXml.enabled = true
+        html.enabled = true
+    }
+}
+
+test {
+    systemProperties System.getProperties()
+
+    finalizedBy jacocoTestReport
+}
+
+task jacocoMergeAll(type: JacocoMerge) {
+    dependsOn(jacocoTestReport)
+    subprojects.each { subproject ->
+        // exclude common and integration subprojects
+        if (subproject.name != 'integration' &&
+                subproject.name != 'common') {
+            executionData subproject.tasks.withType(Test)
+        }
+    }
+}
+
+task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn(jacocoMergeAll)
+
+    additionalSourceDirs.from =
+            files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from =
+            files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from =
+            files(subprojects.sourceSets.main.output)
+    executionData.from =
+            files("${buildDir}/jacoco/jacocoMergeAll.exec")
+
+    reports {
+        html.enabled = true
+        xml.enabled = false
     }
 }

@@ -127,13 +127,13 @@ public class TourGuideService {
         IntStream.range(0, 3).forEach(i -> user.addVisitedLocations(new VisitedLocation(user.getId(), new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime())));
     }
 
-    private double generateRandomLongitude() {
+    public double generateRandomLongitude() {
         double leftLimit = -180;
         double rightLimit = 180;
         return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
     }
 
-    private double generateRandomLatitude() {
+    public double generateRandomLatitude() {
         double leftLimit = -85.05112878;
         double rightLimit = 85.05112878;
         return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);

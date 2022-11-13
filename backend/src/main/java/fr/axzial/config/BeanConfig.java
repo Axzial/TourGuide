@@ -15,11 +15,14 @@ public class BeanConfig {
 
     @Value(value = "${api.url}")
     private String apiUrl;
+    private static final int MAX_CONNECTIONS = 5000;
+    private static final Duration MAX_IDLE_TIME = Duration.ofSeconds(120);;
 
     @Bean
     public WebClient webClient() {
         HttpClient client = HttpClient.create(ConnectionProvider.builder("custom")
-                .maxIdleTime(Duration.ofSeconds(120))
+                .maxIdleTime(MAX_IDLE_TIME)
+                .maxConnections(MAX_CONNECTIONS)
                 .build());
         return WebClient.builder()
                 .baseUrl(apiUrl)

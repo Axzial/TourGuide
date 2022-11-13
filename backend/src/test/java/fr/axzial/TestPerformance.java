@@ -60,7 +60,7 @@ public class TestPerformance {
     // Approx 37 seconds
     @Test
     public void highVolumeTrackLocation() {
-        int TEST_AMOUNT = 100_000;
+        int TEST_AMOUNT = 1_000;
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         UUID uuid = UUID.randomUUID();
@@ -78,7 +78,7 @@ public class TestPerformance {
     // Approx 116 seconds
     @Test
     public void highVolumeGetRewards() {
-        int TEST_AMOUNT = 100_000;
+        int TEST_AMOUNT = 1_000;
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1024");

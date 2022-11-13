@@ -6,10 +6,7 @@ import fr.axzial.model.trip.Provider;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder
@@ -26,13 +23,15 @@ public class User {
     private List<Provider> tripDeals = new ArrayList<>();
 
     public void addVisitedLocations(VisitedLocation visitedLocation) {
-        visitedLocations.add(visitedLocation);
+        this.visitedLocations.add(visitedLocation);
+    }
+
+    public void addAllVisitedLocations(Collection<VisitedLocation> visitedLocations) {
+        this.visitedLocations.addAll(visitedLocations);
     }
 
     public void addUserReward(UserReward userReward) {
-        if (userRewards.stream().allMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
-            userRewards.add(userReward);
-        }
+        userRewards.add(userReward);
     }
 
     public VisitedLocation getLastVisitedLocation() {

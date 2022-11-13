@@ -16,9 +16,6 @@ public class Gateway {
     public static void main(String[] args) {
         ConfigurableApplicationContext run = SpringApplication.run(Gateway.class, args);
         DiscoveryClient bean = run.getBean(DiscoveryClient.class);
-        System.out.println(bean.getServices());
-        System.out.println(bean.getInstances("gps-api"));
-        System.out.println(bean.description());
     }
 
     @Bean

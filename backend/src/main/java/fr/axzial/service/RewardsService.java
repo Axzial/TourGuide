@@ -35,7 +35,7 @@ public class RewardsService {
         List<Attraction> attractions = gpsApiService.getAttractions();
 
         userLocations.forEach(visitedLocation -> attractions.stream()
-                .filter(attraction -> user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName)))
+                .filter(attraction -> user.getUserRewards().stream().noneMatch(r -> attraction.attractionName.equals(r.attraction.attractionName)))
                 .filter(attraction -> nearAttraction(visitedLocation, attraction))
                 .forEach(attraction -> user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)))));
     }
