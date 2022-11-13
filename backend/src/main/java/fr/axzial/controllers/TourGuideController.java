@@ -6,19 +6,27 @@ import fr.axzial.model.gps.VisitedLocation;
 import fr.axzial.model.trip.Provider;
 import fr.axzial.model.user.User;
 import fr.axzial.model.user.UserReward;
+import fr.axzial.service.RewardsService;
 import fr.axzial.service.TourGuideService;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 public class TourGuideController {
 
     private final TourGuideService tourGuideService;
+    private final RewardsService rewardsService;
 
     @RequestMapping("/")
     public String index() {
@@ -31,19 +39,44 @@ public class TourGuideController {
         return visitedLocation.location;
     }
 
-    //  TODO: Change this method to no longer return a List of Attractions.
-    //  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
-    //  Return a new JSON object that contains:
-    // Name of Tourist attraction,
-    // Tourist attractions lat/long,
-    // The user's location lat/long,
-    // The distance in miles between the user's location and each of the attractions.
-    // The reward points for visiting each Attraction.
-    //    Note: Attraction reward points can be gathered from RewardsCentral
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    static class NearbyAttractionDTO {
+        private Location userLocation;
+        private List<NearbyAttractionDistanceDTO> nearbyAttractionDistanceList;
+        private int totalRewardPoints;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    static class NearbyAttractionDistanceDTO {
+        private Attraction attraction;
+        private double distance;
+    }
+
     @RequestMapping("/getNearbyAttractions")
-    public List<Attraction> getNearbyAttractions(@RequestParam String userName) {
+    public NearbyAttractionDTO getNearbyAttractions(@RequestParam String userName) {
         VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-        return tourGuideService.getNearByAttractions(visitedLocation);
+        List<Attraction> nearByAttractions = tourGuideService.getNearByAttractions(visitedLocation);
+        Integer totalRewardPoints = tourGuideService.getUserRewards(getUser(userName)).stream()
+                .map(UserReward::getRewardPoints)
+                .reduce(Integer::sum)
+                .orElse(0);
+
+        return NearbyAttractionDTO.builder()
+                .userLocation(visitedLocation.location)
+                .nearbyAttractionDistanceList(nearByAttractions.stream()
+                        .map(x -> NearbyAttractionDistanceDTO.builder()
+                                .attraction(x)
+                                .distance(rewardsService.getDistance(x, visitedLocation.location))
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                .totalRewardPoints(totalRewardPoints)
+                .build();
     }
 
     @RequestMapping("/getRewards")
@@ -52,18 +85,10 @@ public class TourGuideController {
     }
 
     @RequestMapping("/getAllCurrentLocations")
-    public String getAllCurrentLocations() {
-        // TODO: Get a list of every user's most recent location as JSON
-        //- Note: does not use gpsUtil to query for their current location,
-        //        but rather gathers the user's current location from their stored location history.
-        //
-        // Return object should be the just a JSON mapping of userId to Locations similar to:
-        //     {
-        //        "019b04a9-067a-4c76-8817-ee75088c3822": {"longitude":-48.188821,"latitude":74.84371}
-        //        ...
-        //     }
-
-        return "";
+    public Map<UUID, List<VisitedLocation>> getAllCurrentLocations() {
+        return tourGuideService.getAllUsers()
+                .stream()
+                .collect(Collectors.toMap(User::getId, User::getVisitedLocations));
     }
 
     @RequestMapping("/getTripDeals")
