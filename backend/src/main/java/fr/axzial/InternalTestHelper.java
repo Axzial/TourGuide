@@ -1,4 +1,4 @@
-package tourGuide.helper;
+package fr.axzial;
 
 public class InternalTestHelper {
 
